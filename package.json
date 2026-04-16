@@ -11,7 +11,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@ldapjs/asn1": "^2.0.0",
+    "@ldapjs/asn1": "github:mack-erel/asn1",
     "@ldapjs/attribute": "^1.0.0",
     "@ldapjs/change": "^1.0.0",
     "@ldapjs/controls": "^2.1.0",
