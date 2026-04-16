@@ -1,13 +1,13 @@
 {
   "originalAuthor": "Mark Cavage <mcavage@gmail.com>",
   "name": "@yrneh_jang/ldapjs",
-  "homepage": "https://github.com/yrneh-jang/node-ldapjs",
+  "homepage": "https://github.com/mack-erel/node-ldapjs",
   "description": "LDAP client API with Cloudflare Workers support",
   "version": "3.1.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yrneh-jang/node-ldapjs.git"
+    "url": "git+https://github.com/mack-erel/node-ldapjs.git"
   },
   "main": "lib/index.js",
   "files": [
