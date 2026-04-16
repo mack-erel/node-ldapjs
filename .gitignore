@@ -78,3 +78,5 @@ xcuserdata
 
 # built docs
 /public
+
+.omc/
