@@ -10,7 +10,7 @@ Fork of [ldapjs/node-ldapjs](https://github.com/ldapjs/node-ldapjs) with Cloudfl
 
 - **Server removed**: `createServer()`, `Server`, `persistentSearch` are not included. This is a client-only package.
 - **Cloudflare Workers support**: Socket layer is automatically detected at runtime. Uses `cloudflare:sockets` in CF Workers, `net`/`tls` in Node.js.
-- **`@ldapjs/asn1` patched**: `fs` is lazy-loaded so the module loads without error in CF Workers.
+- **`@yrneh_jang/asn1`**: Fork of `@ldapjs/asn1` where `fs` is lazy-loaded so the module loads without error in CF Workers.
 
 ## Installation
 
