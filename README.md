@@ -1,71 +1,85 @@
-# LDAPjs
+# @yrneh_jang/ldapjs
 
-[![Build Status](https://github.com/ldapjs/node-ldapjs/workflows/Lint%20And%20Test/badge.svg)](https://github.com/ldapjs/node-ldapjs/actions)
-[![Coverage Status](https://coveralls.io/repos/github/ldapjs/node-ldapjs/badge.svg)](https://coveralls.io/github/ldapjs/node-ldapjs/)
+[![npm](https://img.shields.io/npm/v/@yrneh_jang/ldapjs)](https://www.npmjs.com/package/@yrneh_jang/ldapjs)
 
-LDAPjs makes the LDAP protocol a first class citizen in Node.js.
+LDAP client for Node.js and **Cloudflare Workers**.
 
-## Usage
+Fork of [ldapjs/node-ldapjs](https://github.com/ldapjs/node-ldapjs) with Cloudflare Workers support.
 
-For full docs, head on over to <http://ldapjs.org>.
+## Changes from upstream
 
-```javascript
-var ldap = require('ldapjs');
-
-var server = ldap.createServer();
-
-server.search('dc=example', function(req, res, next) {
-  var obj = {
-    dn: req.dn.toString(),
-    attributes: {
-      objectclass: ['organization', 'top'],
-      o: 'example'
-    }
-  };
-
-  if (req.filter.matches(obj.attributes))
-  res.send(obj);
-
-  res.end();
-});
-
-server.listen(1389, function() {
-  console.log('ldapjs listening at ' + server.url);
-});
-```
-
-To run that, assuming you've got the [OpenLDAP](http://www.openldap.org/)
-client on your system:
-
-    ldapsearch -H ldap://localhost:1389 -x -b dc=example objectclass=*
+- **Server removed**: `createServer()`, `Server`, `persistentSearch` are not included. This is a client-only package.
+- **Cloudflare Workers support**: Socket layer is automatically detected at runtime. Uses `cloudflare:sockets` in CF Workers, `net`/`tls` in Node.js.
+- **`@ldapjs/asn1` patched**: `fs` is lazy-loaded so the module loads without error in CF Workers.
 
 ## Installation
 
-    npm install ldapjs
+```bash
+npm install @yrneh_jang/ldapjs
+```
 
-## Node.js Version Support
+## Usage
 
-As of `ldapjs@3` we only support the active Node.js LTS releases.
-See [https://github.com/nodejs/release#release-schedule][schedule] for the LTS
-release schedule.
+### Node.js
 
-For a definitive list of Node.js version we support, see the version matrix
-we test against in our [CI configuration][ci-config].
+```javascript
+const ldap = require('@yrneh_jang/ldapjs')
 
-Note: given the release date of `ldapjs@3`, and the short window of time that
-Node.js v14 had remaining on its LTS window, we opted to not support Node.js
-v14 with `ldapjs@3` (we released late February 2023 and v14 goes into
-maintenance in late April 2023). Also, Node.js v14 will be end-of-life (EOL) on
-September 11, 2023; this is a very shortened EOL timeline and makes it even
-more reasonable to not support it at this point.
+const client = ldap.createClient({
+  url: ['ldap://127.0.0.1:389']
+})
 
-[schedule]: https://github.com/nodejs/release#release-schedule
-[ci-config]: https://github.com/ldapjs/node-ldapjs/blob/master/.github/workflows/main.yml
+client.bind('cn=admin,dc=example,dc=com', 'secret', (err) => {
+  if (err) throw err
+
+  client.search('dc=example,dc=com', { filter: '(objectclass=*)' }, (err, res) => {
+    res.on('searchEntry', (entry) => {
+      console.log(entry.pojo)
+    })
+    res.on('end', () => client.unbind())
+  })
+})
+```
+
+### Cloudflare Workers
+
+Add the following to your `wrangler.toml`:
+
+```toml
+compatibility_flags = ["nodejs_compat"]
+```
+
+Then use the same API as Node.js:
+
+```javascript
+import ldap from '@yrneh_jang/ldapjs'
+
+export default {
+  async fetch(request, env) {
+    const client = ldap.createClient({
+      url: ['ldap://your-ldap-server:389']
+    })
+
+    await new Promise((resolve, reject) => {
+      client.bind('cn=admin,dc=example,dc=com', 'secret', (err) => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+
+    // ... perform LDAP operations
+
+    client.unbind()
+    return new Response('ok')
+  }
+}
+```
+
+## API
+
+Refer to the [original ldapjs documentation](http://ldapjs.org) for the full client API.
+Server-related APIs (`createServer`, `Server`, `persistentSearch`) are not available in this package.
 
 ## License
 
-MIT.
-
-## Bugs
-
-See <https://github.com/ldapjs/node-ldapjs/issues>.
+MIT
